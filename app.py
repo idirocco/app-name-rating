@@ -9,6 +9,8 @@ from evaluator import build_evaluation, export_rows, normalize_name, pretty_json
 from history import append_evaluations, history_by_normalized_name, load_history
 from llm import evaluate_with_llm, get_api_key
 
+DEFAULT_MODEL = "gpt-4o-mini"
+
 st.set_page_config(page_title="Evaluador de Nombres", page_icon="✦", layout="wide")
 st.title("Evaluador de nombres de marca")
 st.caption("Marco interno para comparar nombres de una plataforma tecnológica global.")
@@ -19,7 +21,7 @@ if "session_evaluation_count" not in st.session_state:
 
 with st.sidebar:
     st.header("Configuración")
-    model = st.text_input("Modelo LLM", value="gpt-4o-mini", help="Use un modelo compatible con salida JSON estructurada.")
+    model = st.text_input("Modelo LLM", value=DEFAULT_MODEL, disabled=True, help="Modelo configurado para esta aplicación.")
     st.caption("La inferencia puede tener coste. La clave API nunca se muestra ni se guarda en esta aplicación.")
     st.caption(f"Evaluaciones en esta sesión: {st.session_state['session_evaluation_count']}/20")
 

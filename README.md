@@ -20,7 +20,7 @@ También puede configurar `OPENAI_API_KEY` en `.streamlit/secrets.toml` (ese arc
 OPENAI_API_KEY = "…"
 ```
 
-El modelo predeterminado es `gpt-4o-mini`; se puede cambiar desde la barra lateral por cualquier modelo compatible con JSON Schema estructurado. El alojamiento en Streamlit Community Cloud es gratuito, pero el uso del proveedor LLM puede tener coste.
+El modelo configurado es `gpt-4o-mini` y se muestra como información de solo lectura en la barra lateral. El alojamiento en Streamlit Community Cloud es gratuito, pero el uso del proveedor LLM puede tener coste.
 
 ## Despliegue en Streamlit Community Cloud
 
