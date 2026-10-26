@@ -1,6 +1,9 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from evaluator import deterministic_criteria, eligibility, length_score, overall_score, syllable_score, unicode_letter_count
+from history import append_evaluations, load_history
 
 
 class EvaluatorTests(unittest.TestCase):
@@ -26,6 +29,14 @@ class EvaluatorTests(unittest.TestCase):
         mandatory = {key: {"score": 10} for key in ("M1", "M2", "M3", "M4", "M5")}
         desirable = {key: {"score": 10} for key in ("D3", "D4", "D6")}
         self.assertEqual(overall_score(mandatory, desirable), 10)
+
+    def test_history_is_saved_as_json(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "history.json"
+            saved = append_evaluations([{"name": "Nuvio", "overall_score": 8.5}], path)
+            self.assertEqual(saved[0]["name"], "Nuvio")
+            self.assertIn("evaluated_at", saved[0])
+            self.assertEqual(load_history(path)[0]["overall_score"], 8.5)
 
 
 if __name__ == "__main__":

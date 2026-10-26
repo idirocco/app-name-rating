@@ -33,3 +33,9 @@ El modelo predeterminado es `gpt-4o-mini`; se puede cambiar desde la barra later
 La elegibilidad se calcula localmente: un `FAIL` obligatorio gana sobre cualquier puntuación; si no hay fallos y existe un `REVIEW`, el resultado es `REVIEW`.
 
 La puntuación global también se calcula localmente: 20% promedio de M2/D3, 20% M3, 20% promedio de M4/D6, 15% M1, 15% M5 y 10% D4. D1 y D2 se calculan de forma determinística; D1 es una estimación heurística de pronunciación española y avisa de incertidumbre cuando corresponde.
+
+## Historial y límites
+
+Cada resultado se guarda en `.data/evaluated_names.json` y aparece debajo del evaluador con su detalle. Este archivo no se versiona ni contiene claves. En Streamlit Community Cloud el disco puede ser efímero: descargue el historial JSON para conservación permanente o use almacenamiento externo antes de depender de ese historial entre reinicios.
+
+La aplicación acepta hasta 5 nombres por envío y hasta 20 evaluaciones exitosas por sesión de navegador.
