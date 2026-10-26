@@ -38,4 +38,4 @@ La puntuación global también se calcula localmente: 20% promedio de M2/D3, 20%
 
 Cada resultado se guarda en `.data/evaluated_names.json` y aparece debajo del evaluador con su detalle. Este archivo no se versiona ni contiene claves. En Streamlit Community Cloud el disco puede ser efímero: descargue el historial JSON para conservación permanente o use almacenamiento externo antes de depender de ese historial entre reinicios.
 
-La aplicación acepta hasta 5 nombres por envío y hasta 20 evaluaciones exitosas por sesión de navegador.
+La aplicación acepta hasta 5 nombres por envío y hasta 20 evaluaciones nuevas por sesión de navegador. Antes de llamar al LLM, busca cada nombre en el historial JSON sin distinguir mayúsculas o espacios. Si ya existe, muestra el resultado guardado y no consume API ni el límite de sesión.

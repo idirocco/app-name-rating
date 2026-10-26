@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from evaluator import deterministic_criteria, eligibility, length_score, overall_score, syllable_score, unicode_letter_count
-from history import append_evaluations, load_history
+from history import append_evaluations, history_by_normalized_name, load_history
 
 
 class EvaluatorTests(unittest.TestCase):
@@ -37,6 +37,11 @@ class EvaluatorTests(unittest.TestCase):
             self.assertEqual(saved[0]["name"], "Nuvio")
             self.assertIn("evaluated_at", saved[0])
             self.assertEqual(load_history(path)[0]["overall_score"], 8.5)
+
+    def test_history_lookup_uses_normalized_case_insensitive_name(self):
+        history = [{"name": "Nuvio", "overall_score": 8.5}]
+        saved = history_by_normalized_name(history)
+        self.assertEqual(saved["nuvio"]["overall_score"], 8.5)
 
 
 if __name__ == "__main__":

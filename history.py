@@ -37,3 +37,13 @@ def append_evaluations(evaluations: list[dict[str, Any]], path: Path = HISTORY_P
     temporary_path.write_text(json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
     os.replace(temporary_path, path)
     return history
+
+
+def history_by_normalized_name(history: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Return the newest saved result for each name, case-insensitively."""
+    matches: dict[str, dict[str, Any]] = {}
+    for evaluation in history:
+        name = evaluation.get("name")
+        if isinstance(name, str) and name.strip():
+            matches.setdefault(" ".join(name.split()).casefold(), evaluation)
+    return matches

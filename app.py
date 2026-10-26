@@ -5,8 +5,8 @@ import io
 
 import streamlit as st
 
-from evaluator import build_evaluation, export_rows, pretty_json
-from history import append_evaluations, load_history
+from evaluator import build_evaluation, export_rows, normalize_name, pretty_json
+from history import append_evaluations, history_by_normalized_name, load_history
 from llm import evaluate_with_llm, get_api_key
 
 st.set_page_config(page_title="Evaluador de Nombres", page_icon="✦", layout="wide")
@@ -58,30 +58,46 @@ def show_evaluation_detail(evaluation: dict) -> None:
 
 
 if st.button("Evaluar nombres", type="primary"):
-    names = list(dict.fromkeys(line.strip() for line in names_text.splitlines() if line.strip()))
+    names = []
+    seen_names = set()
+    for line in names_text.splitlines():
+        name = normalize_name(line)
+        key = name.casefold()
+        if name and key not in seen_names:
+            names.append(name)
+            seen_names.add(key)
+    saved_history = load_history()
+    saved_by_name = history_by_normalized_name(saved_history)
+    saved_evaluations = [saved_by_name[name.casefold()] for name in names if name.casefold() in saved_by_name]
+    new_names = [name for name in names if name.casefold() not in saved_by_name]
     if not names:
         st.error("Introduzca al menos un nombre, uno por línea.")
     elif len(names) > 5:
         st.error("Puede evaluar como máximo 5 nombres por envío.")
-    elif st.session_state["session_evaluation_count"] + len(names) > 20:
+    elif st.session_state["session_evaluation_count"] + len(new_names) > 20:
         remaining = 20 - st.session_state["session_evaluation_count"]
         st.error(f"El límite de la sesión es 20 nombres. Aún puede evaluar {remaining}.")
-    elif not (api_key := get_api_key(st.secrets)):
+    elif new_names and not (api_key := get_api_key(st.secrets)):
         st.error("No se encontró OPENAI_API_KEY. Añádala como variable de entorno o en los secretos de Streamlit.")
     else:
-        evaluations = []
-        progress = st.progress(0, text="Preparando evaluación…")
-        try:
-            for index, name in enumerate(names, start=1):
-                progress.progress((index - 1) / len(names), text=f"Evaluando {name} ({index}/{len(names)})…")
-                evaluations.append(build_evaluation(name, evaluate_with_llm(name, extra_context, model, api_key)))
-            progress.progress(1.0, text="Evaluación completada.")
-            st.session_state["evaluations"] = evaluations
-            st.session_state["session_evaluation_count"] += len(evaluations)
-            append_evaluations(evaluations)
-        except Exception:
-            progress.empty()
-            st.error("No fue posible completar la evaluación. Revise el modelo, la clave y la conexión.")
+        new_evaluations = []
+        if new_names:
+            progress = st.progress(0, text="Preparando evaluación…")
+            try:
+                for index, name in enumerate(new_names, start=1):
+                    progress.progress((index - 1) / len(new_names), text=f"Evaluando {name} ({index}/{len(new_names)})…")
+                    new_evaluations.append(build_evaluation(name, evaluate_with_llm(name, extra_context, model, api_key)))
+                progress.progress(1.0, text="Evaluación completada.")
+                append_evaluations(new_evaluations)
+                st.session_state["session_evaluation_count"] += len(new_evaluations)
+            except Exception:
+                progress.empty()
+                st.error("No fue posible completar la evaluación. Revise el modelo, la clave y la conexión.")
+                new_evaluations = []
+        if saved_evaluations:
+            st.info(f"Se reutilizaron {len(saved_evaluations)} resultado(s) ya guardado(s); no se volvió a consultar el modelo.")
+        evaluations_by_name = {item["name"].casefold(): item for item in saved_evaluations + new_evaluations}
+        st.session_state["evaluations"] = [evaluations_by_name[name.casefold()] for name in names if name.casefold() in evaluations_by_name]
 
 evaluations = st.session_state.get("evaluations", [])
 if evaluations:
