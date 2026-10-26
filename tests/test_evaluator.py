@@ -1,0 +1,32 @@
+import unittest
+
+from evaluator import deterministic_criteria, eligibility, length_score, overall_score, syllable_score, unicode_letter_count
+
+
+class EvaluatorTests(unittest.TestCase):
+    def test_length_counts_unicode_letters(self):
+        self.assertEqual(unicode_letter_count("Áurea 2!"), 5)
+        self.assertEqual(length_score(5), 10)
+
+    def test_syllable_scoring(self):
+        self.assertEqual(syllable_score(2), 10)
+        self.assertEqual(syllable_score(3), 7)
+        self.assertEqual(syllable_score(5), 1)
+
+    def test_deterministic_metadata(self):
+        d1 = deterministic_criteria("Nuvio")["D1"]
+        self.assertIn("estimated_syllables", d1)
+        self.assertIn("uncertain", d1)
+
+    def test_mandatory_failure_overrides_score(self):
+        mandatory = {"M1": {"status": "PASS"}, "M2": {"status": "FAIL"}}
+        self.assertEqual(eligibility(mandatory), "FAIL")
+
+    def test_weighted_score_is_calculated_locally(self):
+        mandatory = {key: {"score": 10} for key in ("M1", "M2", "M3", "M4", "M5")}
+        desirable = {key: {"score": 10} for key in ("D3", "D4", "D6")}
+        self.assertEqual(overall_score(mandatory, desirable), 10)
+
+
+if __name__ == "__main__":
+    unittest.main()
